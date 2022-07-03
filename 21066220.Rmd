@@ -1,6 +1,6 @@
 ---
-title: 'Exam Template: Statistical Inference'
-author: '21066220'
+title:  Statistical Inference'
+author: 'Anjola'
 date: 'May 2022: Jan21 run'
 output:
   word_document: default
@@ -13,20 +13,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(error = TRUE,comment=NA) # do not edit this line.
 ```
-
-# Instructions to students
-
-You should only use the file Exam_template_MayExam.Rmd provided on blackboard and you should load this file from your scripts folder / directory.
-
-Save this template as your studentID.Rmd; you will upload this file as your submission. Change the information on line 3 of this file – changing the author information to your **student ID**. Do not change the authorship to your name.
-
-Ensure that you save everything into a single folder (as discussed in class). You may use the files mypackages.R and helperFunctions.R from blackboard. If you use these files, do not alter them. If you wish to create additional files for custom functions that you have prepared in advance, make sure that you upload these in addition to your .Rmd file and your compiled output file.
-
-Your should knit this file to a document **Word** format.
-
-Any changes that you make to the data (e.g. variable name changes) should be made entirely within R.
-
-The subsubsections labelled **Answer:** indicate where you should put in your written Answers. The template also provides blank code chunks for you to complete your Answers; you may choose to add additional chunks if required.
 
 # Data description
 
@@ -85,9 +71,6 @@ colnames(AnjCarData)
 # snapshot of the data and the nature of the data in each column
 ```
 
-
-# Question 1: Data Preparation (11 marks)
-
 You are interested in modelling the price of vehicles that have all of the following properties:
 
 - mileage less than 65000
@@ -104,9 +87,6 @@ This subset of the data is what you should use for the rest of this assessment.
 
 a. Explain what data preparation is required in order for the data in May_2022_Exam_Data.csv to be suitable for this analysis.
 
-**(4 marks)**
-
-### Answer:
 Data preparation is the plan put in place to make data suitable for analysis. In this case, we are making use of is the Car Data that is already presented as a CSV file. There are actual steps to be taken in making this possible
 1. Select appropriate rows and columns. This has already been given in the question as the following:
 - mileage less than 65000. This is within the 'mileage' in column 6. The data is represented in integers
@@ -124,11 +104,6 @@ Data preparation is the plan put in place to make data suitable for analysis. In
 
 b. Implement the required data preparation in the code chunk below:
 
-**(7 marks)**
-
-### Answer:
-
-
 
 ```{r dataprep}
 # the filter is helps to restrict the data to the specific value for analysis
@@ -139,15 +114,7 @@ CarDataPrice <- filter(CarDataFuelType,tax<175)
 CarDataFilter <- CarDataPrice
 ```
 
-# Question 2: Exploratory Data Analysis (22 marks)
-
-## Descriptive Statistics
-
 a.	What descriptive statistics would be appropriate for this dataset?  Explain why these are useful in this context.
-
-**(2 marks)**
-
-### Answer: 
 
 Descriptive analysis is what is used to describe or summarise as datapoint. This is particularly used to give a summarised view about data. It gives an elevated view about the dataset in terms of behaviour. For the purpose of this exercise I would be making use of the Summary statistics
 
@@ -155,9 +122,6 @@ Descriptive analysis is what is used to describe or summarise as datapoint. This
 
 b. Produce those descriptive statistics in the code chunk below:
 
-**(4 marks)**
-
-### Answer:
 
 ```{r DescriptiveStats}
 summary(CarDataFilter)# data summary for a brief understanding about the data distribution per column maybe it is biased to a certain factor. Also to help in data cleaning to know fields that have outliers and null fields
@@ -165,9 +129,7 @@ summary(CarDataFilter)# data summary for a brief understanding about the data di
 
 c. What have those descriptive statistics told you – and how does this inform the analysis that you would undertake on this data or any additional data cleaning requirements?
 
-**(4 marks)**
 
-### Answer:
 Based on the analysis in the descriptive statistics, The prescriptive data helps to give the idea of the skewness of the data, is it positive skewed or negatively skewed.
 I can say that there are outliers in Price, Mileage, Tax and Engine Size. With the benefit of this, I would have restricted my data cleaning to place some boundary functions to keep my data within a specified range. This would help with to eliminate datapoint that are placed in error or with the intention to manipulate data.
 It should be noted that the group of data should be considered . Are they univariate (individual variables) or Bivariate (two variables by another (group). The behaviour would differ in the result. For categorical variables it would be useful to make use of tables to give the summary view of the data points.
@@ -175,13 +137,8 @@ It should be noted that the group of data should be considered . Are they univar
 
 
 
-## Exploratory Graphs
-
 d. What exploratory graphs would be appropriate for this dataset? Explain why these are useful in this context.
 
-**(2 marks)**
-
-### Answer:
 There are various graphs fit for exploratory analysis, these are:
 - scatterplots - two variables comparison
 - grouped scatterplot - more than two variables comparison
@@ -194,9 +151,6 @@ On this exercise, I would make use of scatterplot as I could easily view the act
 
 e. Now produce those exploratory graphs in the code chunk below:
 
-**(4 marks)**
-
-### Answer:
 
 ```{r ExploratoryGraphs}
 plot(CarDataFilter$year,CarDataFilter$price)
@@ -221,19 +175,12 @@ AnjCarData%>%
 
 f. Interpret these exploratory graphs.  How do these graphs inform your subsequent analysis?
 
-**(4 marks)**
-
-### Answer:
 From the data we can comfortably tell that the price of the vehicle increases by the year of produced. The graph not only calculates the prices, I am able to tell the range of cars within a given year with the lowest point to the highest point in a given year. However, this gives an overview explanation as we need to decide the actual driver of the price of vehicle asides the year of make. There are other variables responsible for this which are brand and model. At least, one can see that the highest cost relates to year 2018 which tell that not only does year affect price, there are other factors affecting prices which is what we would need to investigate further.
 
 
-## Correlations
-
 g. What linear correlations are present within this data?
 
-**(2 marks)**
 
-### Answer:
 Since the task is to model the price of the cars, then the most significant element in the Correlation equation would be the price element. Within the price element the variable with the highest absolute values is mpg, though the mpg gives a negative correlation meaning that for any given price, the price of the car would be high when the mpg is low. The next high correlated variable is year. Though it should be noted that this relationship is weak since it's not up to 70%
 
 
@@ -261,21 +208,10 @@ CarDataNumer1<- CarDataSample[,c('year','price','mileage','tax','mpg','engineSiz
 cor(CarDataNumer1)
 ```
 
-# Question 3: Bivariate relationship (14 marks)
-
 a. Which of the potential explanatory variables has the strongest linear relationship with the dependent variable?
-
-**(1 mark)**
-
-### Answer:
-
 
 
 b. Create a linear model to model this relationship.
-
-**(2 marks)**
-
-### Answer:
 
 
 ```{r model1}
@@ -360,9 +296,6 @@ coeff_year[is.na(coeff_year)] <- 0
 ```
 
 
-
-# Question 4: Multivariable relationship (10 marks)
-
 Create a model with all of the appropriate remaining explanatory variables included:
 
 ```{r model2}
@@ -374,10 +307,6 @@ summary(model_full)
 ```
 
 a. Explain and interpret the model:
-
-**(4 marks)**
-
-### Answer:
 
 
 b. Comment on the performance of this model, including comments on overall model fit and the validity of model assumptions. Include any additional code required for you to make these comments in the code chunk below.
@@ -397,9 +326,6 @@ check_model(model_2)
 
 c. What general concerns do you have regarding this model?
 
-**(2 marks)**
-
-### Answer: 
 Multiple regression is a statistical method with two or more continuous explanatory variables. This model of picking variables with permutation would entail errors in missing some data that are crucial to the projection of data. There would be cases where some variables would be redundant. According to the principle of parsimony (Occam's razor) requires the model to be as simple as possible. The explain the steps to take in the simplification of model which includes:
 - Remove non-significant interaction terms.
 - Remove non-significant quadratic or other non-linear terms.
@@ -408,19 +334,14 @@ Multiple regression is a statistical method with two or more continuous explanat
 - Amalgamate explanatory variables that have similar parameter values.
 - Set non-significant slopes to zero within ANCOVA
 
-# Question 5: Model simplification (8 marks)
-
 
 a.	What approaches for model simplification would you consider implementing and why?
-
-**(4 marks)**
 
 ### Answer:
 A good model implementation method will be the use of AIC (Akaike Information Criterion). This would help to give the best calculation to know the variables that best explains a dependent variable. The AIC method particularly helps to address the methods of simplification defined above from O'Reilly publication. In oarticular, it addresses 2,3,4 and 5
 
 b.	What are the potential advantages of simplifying a model?
 
-**(2 marks)**
 
 ### Answer:
 - It helps to define the best factor that determines an explanatory variable for example, it is the method engaged in Centers for Diseases Control and Prevention in detecting the factors that cause Diabetes in human
@@ -429,7 +350,6 @@ b.	What are the potential advantages of simplifying a model?
 
 c.	 What are the potential disadvantages of simplifying a model?
 
-**(2 marks)**
 
 ### Answer:
 As fantastic as AIC potrays, it does not define what the sample size for calculating the AIC, that is the number of most relevant variable
