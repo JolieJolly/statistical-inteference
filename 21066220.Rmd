@@ -1,0 +1,475 @@
+---
+title: 'Exam Template: Statistical Inference'
+author: '21066220'
+date: 'May 2022: Jan21 run'
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+# do not change these options
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE,comment=NA) # do not edit this line.
+```
+
+# Instructions to students
+
+You should only use the file Exam_template_MayExam.Rmd provided on blackboard and you should load this file from your scripts folder / directory.
+
+Save this template as your studentID.Rmd; you will upload this file as your submission. Change the information on line 3 of this file – changing the author information to your **student ID**. Do not change the authorship to your name.
+
+Ensure that you save everything into a single folder (as discussed in class). You may use the files mypackages.R and helperFunctions.R from blackboard. If you use these files, do not alter them. If you wish to create additional files for custom functions that you have prepared in advance, make sure that you upload these in addition to your .Rmd file and your compiled output file.
+
+Your should knit this file to a document **Word** format.
+
+Any changes that you make to the data (e.g. variable name changes) should be made entirely within R.
+
+The subsubsections labelled **Answer:** indicate where you should put in your written Answers. The template also provides blank code chunks for you to complete your Answers; you may choose to add additional chunks if required.
+
+# Data description
+
+
+This dataset is part of a larger dataset that has been collected to help to estimate the price of used cars.
+
+It contains the following variables:
+
+- brand (manufacturer)
+- model (of car)
+- year (of registration of the car)
+- price (in GB pounds)
+- transmission (type of gearbox)
+- mileage (total distance covered by the car)
+- fuelType (type of fuel used by the car)
+- tax (annual cost of vehicle tax)
+- mpg (miles per gallon - a measure of fuel efficiency)
+- engineSize (size of the engine in litres)
+
+
+```{r libraries, include=FALSE}
+library(kableExtra)
+library(assertr)
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(MASS)
+library(summarytools) 
+library(psych)
+library(patchwork) 
+library(corrplot)
+library(performance) 
+library(glmnet)
+library(equatiomatic)
+```
+
+```{r data}
+# load dataset
+AnjCarData <- read.csv(file = 'May_2022_Exam_Data.csv')
+  #assert(not_na(mileage))%>%
+  #assert(not_na(tax))%>%
+
+AnjCarData$index = 1:nrow(AnjCarData)
+
+AnjCarData
+
+#thisis to give a short overview of the data that I would be working with, to understand the number of rows and colums
+```
+
+
+```{r data type}
+
+str(AnjCarData)
+colnames(AnjCarData)
+# snapshot of the data and the nature of the data in each column
+```
+
+
+# Question 1: Data Preparation (11 marks)
+
+You are interested in modelling the price of vehicles that have all of the following properties:
+
+- mileage less than 65000
+- Manual transmission
+- Petrol engine (fuelType)
+- Costing less than £175 in annual Vehicle Tax.
+
+Once you have selected the rows of data with these properties, then you must *use your studentID* to select a random sample of 2000 rows of the data to perform the rest of your analysis with.
+
+You should remove any redundant variables (where only one value remains in that variable).
+
+This subset of the data is what you should use for the rest of this assessment. 
+
+
+a. Explain what data preparation is required in order for the data in May_2022_Exam_Data.csv to be suitable for this analysis.
+
+**(4 marks)**
+
+### Answer:
+Data preparation is the plan put in place to make data suitable for analysis. In this case, we are making use of is the Car Data that is already presented as a CSV file. There are actual steps to be taken in making this possible
+1. Select appropriate rows and columns. This has already been given in the question as the following:
+- mileage less than 65000. This is within the 'mileage' in column 6. The data is represented in integers
+- Manual transmission. This is in 'transmission' column but we are more focused on selecting manual transmission. 
+- Petrol engine (fuelType). This is within the 'fuel type' column and our focus is on 'petrol'
+- Costing less than £175 in annual Vehicle Tax. This is under tax colum with focus on vehicles that are taxed below £175
+
+2. Check for variables. The next step sis to check if all the variables are available within the same file or if there is a need to import another file to combine with the existing file. In this case all the variables that are required for the analysis is resident in the Car Data file specified.
+
+3. Check for missing data. Missing data in this case are data with nan values or with empty values, as the analyst, I would make up my mind in what step to take to sort this i.e. either delete the record or maybe ignore the received if they pose no threat to the analysis.A
+
+4. Clean data. In cleaning the data, you check the dataset for wrong data type that is inserted in the data to eliminate. For example, I would check for each colums to ascertain that the wrong data format is not included in the data. like if character is not typed in the column of integer. Another case to consider is check for  specify if the range of data to see if there are disparate figures placed in the set.
+
+5. Reason for the analysis. It is always important to identify the reason for the analysis, what the client wants to see or the projections that needs to be made. The is where we determine the independent variable or value and which variables are the dependent variable or output variable
+
+b. Implement the required data preparation in the code chunk below:
+
+**(7 marks)**
+
+### Answer:
+
+
+
+```{r dataprep}
+# the filter is helps to restrict the data to the specific value for analysis
+CarDataMileage <- filter(AnjCarData,mileage<65000)
+CarDataTransmission <- filter(CarDataMileage,transmission =='Manual')
+CarDataFuelType <- filter(CarDataTransmission,fuelType=='Petrol')
+CarDataPrice <- filter(CarDataFuelType,tax<175)
+CarDataFilter <- CarDataPrice
+```
+
+# Question 2: Exploratory Data Analysis (22 marks)
+
+## Descriptive Statistics
+
+a.	What descriptive statistics would be appropriate for this dataset?  Explain why these are useful in this context.
+
+**(2 marks)**
+
+### Answer: 
+
+Descriptive analysis is what is used to describe or summarise as datapoint. This is particularly used to give a summarised view about data. It gives an elevated view about the dataset in terms of behaviour. For the purpose of this exercise I would be making use of the Summary statistics
+
+
+
+b. Produce those descriptive statistics in the code chunk below:
+
+**(4 marks)**
+
+### Answer:
+
+```{r DescriptiveStats}
+summary(CarDataFilter)# data summary for a brief understanding about the data distribution per column maybe it is biased to a certain factor. Also to help in data cleaning to know fields that have outliers and null fields
+```
+
+c. What have those descriptive statistics told you – and how does this inform the analysis that you would undertake on this data or any additional data cleaning requirements?
+
+**(4 marks)**
+
+### Answer:
+Based on the analysis in the descriptive statistics, The prescriptive data helps to give the idea of the skewness of the data, is it positive skewed or negatively skewed.
+I can say that there are outliers in Price, Mileage, Tax and Engine Size. With the benefit of this, I would have restricted my data cleaning to place some boundary functions to keep my data within a specified range. This would help with to eliminate datapoint that are placed in error or with the intention to manipulate data.
+It should be noted that the group of data should be considered . Are they univariate (individual variables) or Bivariate (two variables by another (group). The behaviour would differ in the result. For categorical variables it would be useful to make use of tables to give the summary view of the data points.
+
+
+
+
+## Exploratory Graphs
+
+d. What exploratory graphs would be appropriate for this dataset? Explain why these are useful in this context.
+
+**(2 marks)**
+
+### Answer:
+There are various graphs fit for exploratory analysis, these are:
+- scatterplots - two variables comparison
+- grouped scatterplot - more than two variables comparison
+- histogram - Single variable comparisona against a number of occurrence or frequency
+- box and whisker plot - highs and lows of a variable over time
+- bar chart or bar graph - works like histogram, for single variable over occurrence
+- line graph (time series) - Single variable comparison over a period of time
+On this exercise, I would make use of scatterplot as I could easily view the actual relationship between two variables. 
+
+
+e. Now produce those exploratory graphs in the code chunk below:
+
+**(4 marks)**
+
+### Answer:
+
+```{r ExploratoryGraphs}
+plot(CarDataFilter$year,CarDataFilter$price)
+
+```
+```{r PriceCategorisationTransmission}
+AnjCarData%>%
+  verify(price > 0) %>%
+  group_by(transmission)%>%
+  summarise(avg.price=mean(price))
+# explians the way prices is distributed over the transmission
+```
+
+```{r PriceCategorisationModel}
+AnjCarData%>%
+  verify(price > 0) %>%
+  group_by(model)%>%
+  summarise(avg.price=mean(price))
+# explains distribution of price over car model
+```
+  
+
+f. Interpret these exploratory graphs.  How do these graphs inform your subsequent analysis?
+
+**(4 marks)**
+
+### Answer:
+From the data we can comfortably tell that the price of the vehicle increases by the year of produced. The graph not only calculates the prices, I am able to tell the range of cars within a given year with the lowest point to the highest point in a given year. However, this gives an overview explanation as we need to decide the actual driver of the price of vehicle asides the year of make. There are other variables responsible for this which are brand and model. At least, one can see that the highest cost relates to year 2018 which tell that not only does year affect price, there are other factors affecting prices which is what we would need to investigate further.
+
+
+## Correlations
+
+g. What linear correlations are present within this data?
+
+**(2 marks)**
+
+### Answer:
+Since the task is to model the price of the cars, then the most significant element in the Correlation equation would be the price element. Within the price element the variable with the highest absolute values is mpg, though the mpg gives a negative correlation meaning that for any given price, the price of the car would be high when the mpg is low. The next high correlated variable is year. Though it should be noted that this relationship is weak since it's not up to 70%
+
+
+```{r seed and sampling}
+seed = (21066220)
+set.seed(seed)
+N<-nrow(CarDataFilter)
+sample_index<-sample(N,2000,replace=FALSE)
+CarDataSample<-filter(CarDataFilter,index %in% sample_index)
+```
+
+```{r linearcor}
+CarDataNum<- CarDataFilter[,c('year','price','mileage','tax','mpg','engineSize')]
+
+
+cor(CarDataNum)
+```
+It should be noted that the correlation results of the sample gives a different result from that of the population. And so the overall result may differ. From the population, the highest correlation is 'mpg' followed by the 'year', while from the sample size the highest correlation is 'year' followed by the 'mpg'.
+
+
+
+```{r linearcor}
+CarDataNumer1<- CarDataSample[,c('year','price','mileage','tax','mpg','engineSize')]
+
+cor(CarDataNumer1)
+```
+
+# Question 3: Bivariate relationship (14 marks)
+
+a. Which of the potential explanatory variables has the strongest linear relationship with the dependent variable?
+
+**(1 mark)**
+
+### Answer:
+
+
+
+b. Create a linear model to model this relationship.
+
+**(2 marks)**
+
+### Answer:
+
+
+```{r model1}
+model1<- lm(price~mpg,data=CarDataFilter)
+summary(model1)
+ggplot(CarDataFilter, aes(x=mpg,y=price))+geom_point(shape=1)+geom_smooth(method = 'loess')
+
+```
+```{r}
+names(which.max(abs(cor(CarDataNumeric)[-1,1])))
+```
+Though 'mileage' gives the highest correlation, we can't make use of it because we are referencng variables that affect the changes in the price of cars.
+
+c. Explain and interpret the model:
+
+**(3 marks)**
+
+### Answer:
+From the model the p-value is really small (<2e-16) less than 0.05 meaning that the mpg is very significant to determining the price of car
+Even though the correlation between the two variables is not very strong, one can take another look at the closeness of the observations to the error line, this tells that the mpg somewhat tells the price to a large extent even though it is not the only factor. We can also judge that the higher mpg means a lower price of the car.
+Also, the R-square of 0.3838 means 38.38% variation in mpg
+
+
+d. Comment on the performance of this model, including comments on overall model fit and the validity of model assumptions. Include any additional code required for you to make these comments in the code chunk below.
+
+**(4 marks)**
+
+### Answer:
+
+```{r model1performance}
+library(see)
+check_model(model1)
+
+
+```
+
+
+## Bootstrap
+
+e. Use bootstrapping on this model to obtain a 95% confidence interval of the estimate of the slope parameter.
+
+**(4 marks)**
+
+### Answer:
+
+```{r bootstrap}
+#seed = (21066220)
+#set.seed(seed)
+#N<-nrow(CarDataFilter)
+#sample_index<-sample(N,2000,replace=TRUE)
+#CarDataSample<-filter(CarDataFilter,index %in% sample_index)
+
+Nbootstrap<- 2000 # 
+Boot_mean<-rep(NA,Nbootstrap)
+coeff_mpg <-rep(NA,Nbootstrap)
+coeff_year <-rep(NA,Nbootstrap)
+# Perform bootstrap
+set.seed(21066220)
+
+for(i in seq_len(Nbootstrap)){
+  Boot_index <- sample(seq_len(N), N, replace=TRUE)
+  Boot_sample <- CarDataSample$price[Boot_index]
+  Boot_mean[i]<- mean(Boot_sample)
+}
+
+quantile(Boot_mean, c(.025, 0.975))
+
+Bootstrap <- CarDataSample(Mean=Boot_mean)
+ggplot(Bootstrap, aes(x=Mean)) +
+geom_histogram(aes(y = ..density..),binwidth = .5)+
+  geom_density()+
+ggtitle("Bootstrapped Means")+
+theme_bw()
+
+
+# Where the coefficient is NA it means the wt variable wasn't selected
+# Set NA's to 0
+coeff_mpg[is.na(coeff_mpg)] <- 0
+coeff_year[is.na(coeff_year)] <- 0
+
+
+```
+
+
+
+# Question 4: Multivariable relationship (10 marks)
+
+Create a model with all of the appropriate remaining explanatory variables included:
+
+```{r model2}
+model2 <- lm(price~mpg+year,data=CarDataFilter)
+summary(model2)
+
+model_full <- lm(price ~ ., data=CarDataFilter)
+summary(model_full)
+```
+
+a. Explain and interpret the model:
+
+**(4 marks)**
+
+### Answer:
+
+
+b. Comment on the performance of this model, including comments on overall model fit and the validity of model assumptions. Include any additional code required for you to make these comments in the code chunk below.
+
+**(4 marks)**
+
+### Answer:
+The R-squared has gone up. The model with mpg and year as independent variables explains 59.62% of variation in price as against the multiple r-square of 38.38% with mpg only.
+The p-values for each coefficient are 2e-16 meaning that they are significant and are the same as the p-values on mpg only. They do not correspond to the p-value for the whole model.
+
+
+```{r model2performance}
+
+check_model(model_2)
+
+```
+
+c. What general concerns do you have regarding this model?
+
+**(2 marks)**
+
+### Answer: 
+Multiple regression is a statistical method with two or more continuous explanatory variables. This model of picking variables with permutation would entail errors in missing some data that are crucial to the projection of data. There would be cases where some variables would be redundant. According to the principle of parsimony (Occam's razor) requires the model to be as simple as possible. The explain the steps to take in the simplification of model which includes:
+- Remove non-significant interaction terms.
+- Remove non-significant quadratic or other non-linear terms.
+- Remove non-significant explanatory variables.
+- Group together factor levels that do not differ from one another.
+- Amalgamate explanatory variables that have similar parameter values.
+- Set non-significant slopes to zero within ANCOVA
+
+# Question 5: Model simplification (8 marks)
+
+
+a.	What approaches for model simplification would you consider implementing and why?
+
+**(4 marks)**
+
+### Answer:
+A good model implementation method will be the use of AIC (Akaike Information Criterion). This would help to give the best calculation to know the variables that best explains a dependent variable. The AIC method particularly helps to address the methods of simplification defined above from O'Reilly publication. In oarticular, it addresses 2,3,4 and 5
+
+b.	What are the potential advantages of simplifying a model?
+
+**(2 marks)**
+
+### Answer:
+- It helps to define the best factor that determines an explanatory variable for example, it is the method engaged in Centers for Diseases Control and Prevention in detecting the factors that cause Diabetes in human
+- It automates the calculation and presentation of multiple regression model, we can compute the marginal likelihood and weights
+
+
+c.	 What are the potential disadvantages of simplifying a model?
+
+**(2 marks)**
+
+### Answer:
+As fantastic as AIC potrays, it does not define what the sample size for calculating the AIC, that is the number of most relevant variable
+
+# Question 6: Reporting (35 marks)
+
+A client is looking to purchase a used VW Polo (registration year either 2018 or 2019, manual transmission, petrol engine) and wants to understand what factors influence the expected price of a used car, (and how they influence the price). 
+
+Write a short report of 300-500 words for the client. 
+
+Furthermore, include an explanation as to which statistical model you would recommend, and why you have selected that statistical model. 
+
+Comment on any suggestions for alterations to the statistical model that would be appropriate to consider. 
+
+Highlight what may or may not be directly transferable from the scenario analysed in Questions 1 to 5. 
+
+
+### Answer:
+According to finance institute, Regression analysis is a set of statistical methods used for the estimation of relationships between a dependent variable and one or more independent variables . It can be utilized to assess the strength of the relationship between variables and for modeling the future relationship between them. According to science direct term, Regression analysis is the study of how a response variable depends on one or more predictors. In regression graphics we pursue low-dimensional sufficient summary plots. These plots, which do not require a model for their construction, contain all the information on the response that is available from the predictors.
+From both definition, we can tell that there is usually a dependent variable that is caused by changes in independent variables. Regression gives the analysis of the changes in the behaviour of independent variables.
+
+Based on the calculations above, regression analysis works with numeric data or quantitative data only and can't predict from qualitative data that views the perception and feel of the customer about the car like brand, transmission, engine type etc. in reality, there are other factors that affect price which could be predominance of certain vehicles in specific location. These would be considered. As such exact prices may not be obtained but ranges could work if filters are applied to the specification from the customer
+
+In one of the tables that I have created above, we can tell that semi-automatic cost more than all other cars which is also a determinant to the prices of car. Also, we can tell that some brands are more costlier than others like Gclass, R8 etc.
+`rknitr::include_graphics(knitr::fig_chunk(PriceCategorisationModel,dev='png'))`
+
+Based on the client request, to purchase a used VW Polo (registration year either 2018 or 2019, manual transmission, petrol engine). These factors selected are character defined in the table and do not have numeric values, it might a bit though to predict the prices of the cars. 
+
+A method to resolve the highlighted issues would be to attach a numeric value to the type of observation within a variable such that mathematical calculation can be made on these factor.
+
+All graphs and analysis were performed on R
+
+# Session Information
+
+Do not edit this part. Make sure that you compile your document so that the information about your session (including software / package versions) is included in your submission.
+
+```{r}
+sessionInfo()
+Rsudio - Appsanywhere
+R version 4.0.5 (2021-03-31) -- "Shake and Throw"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+```
